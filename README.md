@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # PESONA — Inventori & Finansial UMKM
 
 Aplikasi web yang menggantikan spreadsheet `Sheet Inventori dan Finansial UMKM.xlsx`,
@@ -16,3 +17,7 @@ Lalu buka:
 
 Dokumentasi teknis (struktur, ERD, rumus, status pengujian) ada di
 [`docs/README.md`](docs/README.md).
+=======
+# Pesona_Sheet_UMKM
+A Web-based Inventory, Cash Flow, and Cost Management System designed for MSMEs (UMKM)
+>>>>>>> ac41d65c3ac1feb1e0a80c5af0b68e7f87efb84d
