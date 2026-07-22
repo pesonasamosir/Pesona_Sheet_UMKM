@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field %}
+{% block title %}Biaya Tidak Langsung · PESONA{% endblock %}
+{% block content %}
+<header class="page-header">
+  <h1 class="page-title">Biaya Tidak Langsung</h1>
+  <p class="page-lead">Overhead operasional — listrik, air, transportasi, packing — dengan % alokasi ke produksi.</p>
+</header>
+
+<div class="row-actions" style="margin-top:0;margin-bottom:1.25rem;">
+  <a href="{{ url_for('costs.fixed_cost') }}" class="btn-ghost btn-sm">Biaya Tetap</a>
+  <a href="{{ url_for('costs.overhead_cost') }}" class="btn-brand btn-sm">Biaya Tidak Langsung</a>
+  <a href="{{ url_for('costs.settings') }}" class="btn-ghost btn-sm">Asumsi</a>
+</div>
+
+<div class="split-2">
+  <div class="panel">
+    <div class="panel-head">Tambah Overhead</div>
+    <div class="panel-body">
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ render_field(form.category) }}
+        {{ render_field(form.amount_per_month) }}
+        {{ render_field(form.allocation_pct) }}
+        <button class="btn-brand" type="submit">Tambah</button>
+      </form>
+    </div>
+  </div>
+  <div class="panel panel-flush">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Kategori</th>
+            <th class="text-end">Nominal/Bulan</th>
+            <th class="text-end">% Alokasi</th>
+            <th class="text-end">Teralokasi</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for item in items %}
+          <tr>
+            <td>{{ item.category }}</td>
+            <td class="text-end">{{ item.amount_per_month|rupiah }}</td>
+            <td class="text-end">{{ (item.allocation_pct * 100)|percent(0) }}</td>
+            <td class="text-end">{{ item.allocated_amount|rupiah }}</td>
+            <td class="text-end">
+              <form action="{{ url_for('costs.delete_overhead_cost', item_id=item.id) }}" method="post" class="confirm-delete">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn-danger-outline" type="submit">Hapus</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5" class="empty-state">Belum ada biaya overhead.</td></tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="fw-bold"><td colspan="3">TOTAL OVERHEAD TERALOKASI</td><td class="text-end">{{ total|rupiah }}</td><td></td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

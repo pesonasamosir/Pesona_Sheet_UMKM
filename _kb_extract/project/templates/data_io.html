@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field %}
+{% block title %}Import & Export{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-arrow-left-right"></i> Import & Export Data</h4>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header bg-white">Import dari Excel (.xlsx)</div>
+      <div class="card-body">
+        <p class="text-muted small">
+          Upload file Excel dengan struktur sheet yang sama seperti template asli
+          (Biaya Tetap, Biaya Variabel, Biaya Tidak Langsung, Inventori Harian).
+          Data yang sudah ada (dicocokkan berdasarkan nama) akan diperbarui,
+          data baru akan otomatis ditambahkan.
+        </p>
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {{ form.hidden_tag() }}
+          {{ render_field(form.file) }}
+          <button class="btn btn-brand" type="submit"><i class="bi bi-upload"></i> Import</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header bg-white">Export Hasil</div>
+      <div class="card-body d-flex flex-column gap-2">
+        <a href="{{ url_for('data_io.export_excel') }}" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-excel"></i> Export ke Excel (.xlsx)</a>
+        <a href="{{ url_for('data_io.export_pdf') }}" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-pdf"></i> Export Laporan PDF</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field %}
+{% block title %}Biaya Tetap · PESONA{% endblock %}
+{% block content %}
+<header class="page-header">
+  <h1 class="page-title">Biaya Tetap Bulanan</h1>
+  <p class="page-lead">Biaya yang harus dibayar meskipun tidak ada penjualan — sewa, gaji tetap, penyusutan.</p>
+</header>
+
+<div class="row-actions" style="margin-top:0;margin-bottom:1.25rem;">
+  <a href="{{ url_for('costs.fixed_cost') }}" class="btn-brand btn-sm">Biaya Tetap</a>
+  <a href="{{ url_for('costs.overhead_cost') }}" class="btn-ghost btn-sm">Biaya Tidak Langsung</a>
+  <a href="{{ url_for('costs.settings') }}" class="btn-ghost btn-sm">Asumsi</a>
+</div>
+
+<div class="split-2">
+  <div class="panel">
+    <div class="panel-head">Tambah Biaya Tetap</div>
+    <div class="panel-body">
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ render_field(form.category) }}
+        {{ render_field(form.amount_per_month) }}
+        {{ render_field(form.notes, rows="2") }}
+        <button class="btn-brand" type="submit">Tambah</button>
+      </form>
+    </div>
+  </div>
+  <div class="panel panel-flush">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Kategori</th><th class="text-end">Nominal/Bulan</th><th></th></tr></thead>
+        <tbody>
+        {% for item in items %}
+          <tr>
+            <td>{{ item.category }}</td>
+            <td class="text-end">{{ item.amount_per_month|rupiah }}</td>
+            <td class="text-end">
+              <form action="{{ url_for('costs.delete_fixed_cost', item_id=item.id) }}" method="post" class="confirm-delete">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn-danger-outline" type="submit">Hapus</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="3" class="empty-state">Belum ada biaya tetap.</td></tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="fw-bold"><td>TOTAL FIXED COST</td><td class="text-end">{{ total|rupiah }}</td><td></td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

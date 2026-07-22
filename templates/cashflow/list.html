@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Arus Kas · PESONA{% endblock %}
+{% block content %}
+<header class="page-header">
+  <h1 class="page-title">Arus Kas &amp; Profit</h1>
+  <p class="page-lead">Revenue, total cost, profit, dan margin bulanan per produk.</p>
+</header>
+
+<div class="toolbar">
+  <div></div>
+  <div class="toolbar-actions">
+    <a href="{{ url_for('cashflow.add_cashflow') }}" class="btn-brand">Tambah Data</a>
+  </div>
+</div>
+
+<div class="panel panel-flush">
+  <div class="table-wrap">
+    <table class="data-table small">
+      <thead>
+        <tr>
+          <th>Bulan</th>
+          <th>Produk</th>
+          <th class="text-end">Unit Terjual</th>
+          <th class="text-end">Harga Jual</th>
+          <th class="text-end">Revenue</th>
+          <th class="text-end">Total Cost</th>
+          <th class="text-end">Profit</th>
+          <th class="text-end">Margin</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results %}
+        <tr>
+          <td>{{ r.month_label }}</td>
+          <td>{{ r.product_name }}</td>
+          <td class="text-end">{{ r.units_sold|numfmt(0) }}</td>
+          <td class="text-end">{{ r.selling_price|rupiah }}</td>
+          <td class="text-end">{{ r.revenue|rupiah }}</td>
+          <td class="text-end">{{ r.total_cost|rupiah }}</td>
+          <td class="text-end fw-semibold {{ 'text-success' if r.profit >= 0 else 'text-danger' }}">{{ r.profit|rupiah }}</td>
+          <td class="text-end">{{ r.profit_margin_pct|percent }}</td>
+          <td class="text-end">
+            <form action="{{ url_for('cashflow.delete_cashflow', entry_id=r.entry_id) }}" method="post" class="confirm-delete">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn-danger-outline" type="submit">Hapus</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="empty-state">Belum ada data arus kas.</td></tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="fw-bold">
+          <td colspan="4">TOTAL</td>
+          <td class="text-end">{{ totals.total_revenue|rupiah }}</td>
+          <td class="text-end">{{ totals.total_cost|rupiah }}</td>
+          <td class="text-end">{{ totals.total_profit|rupiah }}</td>
+          <td class="text-end">{{ totals.average_profit_margin_pct|percent }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+{% endblock %}

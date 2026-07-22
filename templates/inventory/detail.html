@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ material.name }}{% endblock %}
+{% block content %}
+<h4 class="mb-3">{{ material.name }} <small class="text-muted">({{ material.unit }})</small></h4>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header bg-white">Model EOQ + Safety Stock</div>
+      <div class="card-body">
+        <table class="table mb-0">
+          <tr><td>Permintaan Harian Rata-rata</td><td class="text-end">{{ result.permintaan_harian_rata2|numfmt(2) }}</td></tr>
+          <tr><td>Permintaan Harian Maksimum</td><td class="text-end">{{ result.permintaan_harian_maksimum|numfmt(2) }}</td></tr>
+          <tr><td>Permintaan Tahunan (D)</td><td class="text-end">{{ result.permintaan_tahunan|numfmt(0) }}</td></tr>
+          <tr><td>EOQ (unit/order)</td><td class="text-end fw-bold">{{ result.eoq }}</td></tr>
+          <tr><td>Safety Stock</td><td class="text-end fw-bold">{{ result.safety_stock }}</td></tr>
+          <tr><td>Reorder Point</td><td class="text-end fw-bold">{{ result.reorder_point }}</td></tr>
+          <tr><td>Status</td><td class="text-end"><span class="badge {{ 'badge-pesan' if result.status_reorder_eoq == 'Segera Pesan' else 'badge-aman' }}">{{ result.status_reorder_eoq }}</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header bg-white">Model LFL + Safety Stock</div>
+      <div class="card-body">
+        <table class="table mb-0">
+          <tr><td>Kebutuhan Bulan Depan</td><td class="text-end">{{ result.kebutuhan_bulan_depan_lfl|numfmt(0) }}</td></tr>
+          <tr><td>Safety Stock (LFL)</td><td class="text-end">{{ result.safety_stock_lfl }}</td></tr>
+          <tr><td>Jumlah Pesan</td><td class="text-end fw-bold">{{ result.jumlah_pesan_lfl|numfmt(0) }}</td></tr>
+          <tr><td>Status</td><td class="text-end"><span class="badge {{ 'badge-pesan' if result.status_reorder_lfl == 'Segera Pesan' else 'badge-aman' }}">{{ result.status_reorder_lfl }}</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="{{ url_for('inventory.list_materials') }}" class="btn btn-link mt-3">&larr; Kembali</a>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field %}
+{% block title %}Asumsi · PESONA{% endblock %}
+{% block content %}
+<header class="page-header">
+  <h1 class="page-title">Asumsi</h1>
+  <p class="page-lead">Parameter umum yang dipakai rumus inventori di sheet lain.</p>
+</header>
+
+<div class="row-actions" style="margin-top:0;margin-bottom:1.25rem;">
+  <a href="{{ url_for('costs.fixed_cost') }}" class="btn-ghost btn-sm">Biaya Tetap</a>
+  <a href="{{ url_for('costs.overhead_cost') }}" class="btn-ghost btn-sm">Biaya Tidak Langsung</a>
+  <a href="{{ url_for('costs.settings') }}" class="btn-brand btn-sm">Asumsi</a>
+</div>
+
+<div class="panel" style="max-width: 28rem;">
+  <div class="panel-body">
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      {{ render_field(form.hari_kerja_per_bulan) }}
+      <p class="form-hint">Hari kerja efektif UMKM, tidak termasuk hari libur.</p>
+      {{ render_field(form.bulan_per_tahun) }}
+      <p class="form-hint">Untuk konversi permintaan bulanan menjadi permintaan tahunan.</p>
+      <button class="btn-brand" type="submit">Simpan</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

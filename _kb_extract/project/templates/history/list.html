@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Riwayat Perhitungan{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-clock-history"></i> Riwayat Perhitungan</h4>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table mb-0 small">
+      <thead><tr><th>Tanggal</th><th>Jenis</th><th>Referensi</th><th>Ringkasan Hasil</th></tr></thead>
+      <tbody>
+      {% for e in entries %}
+        <tr>
+          <td>{{ e.created_at.strftime("%d-%m-%Y %H:%M") }}</td>
+          <td>{{ e.calc_type }}</td>
+          <td>{{ e.reference_name }}</td>
+          <td class="text-muted">{{ e.result_json[:120] }}{% if e.result_json|length > 120 %}...{% endif %}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="text-center text-muted py-4">Belum ada riwayat perhitungan.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

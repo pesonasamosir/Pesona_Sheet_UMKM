@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<h4 class="mb-3">{{ title }}</h4>
+<div class="card" style="max-width: 640px;">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      {{ render_field(form.month_label) }}
+      {{ render_field(form.product_id) }}
+      {{ render_field(form.units_sold) }}
+      {{ render_field(form.selling_price) }}
+      {{ render_field(form.fixed_cost_allocation_pct) }}
+      <p class="text-muted small mt-n2">Isi manual sesuai estimasi proporsi waktu/volume produksi produk ini.</p>
+      {{ render_field(form.overhead_allocation_pct) }}
+      <button class="btn btn-brand" type="submit"><i class="bi bi-check-lg"></i> Simpan</button>
+      <a href="{{ url_for('cashflow.list_cashflow') }}" class="btn btn-link">Batal</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

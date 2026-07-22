@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field %}
+{% block title %}Biaya Tetap{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-cash-coin"></i> Biaya Tetap Bulanan</h4>
+<div class="row g-3">
+  <div class="col-md-5">
+    <div class="card"><div class="card-body">
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ render_field(form.category) }}
+        {{ render_field(form.amount_per_month) }}
+        {{ render_field(form.notes, rows="2") }}
+        <button class="btn btn-brand" type="submit"><i class="bi bi-plus-lg"></i> Tambah</button>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-md-7">
+    <div class="card">
+      <table class="table mb-0">
+        <thead><tr><th>Kategori</th><th class="text-end">Nominal/Bulan</th><th></th></tr></thead>
+        <tbody>
+        {% for item in items %}
+          <tr>
+            <td>{{ item.category }}</td>
+            <td class="text-end">{{ item.amount_per_month|rupiah }}</td>
+            <td class="text-end">
+              <form action="{{ url_for('costs.delete_fixed_cost', item_id=item.id) }}" method="post" class="confirm-delete">
+                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="3" class="text-center text-muted py-3">Belum ada biaya tetap.</td></tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="fw-bold"><td>TOTAL FIXED COST</td><td class="text-end">{{ total|rupiah }}</td><td></td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

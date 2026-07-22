@@ -1,0 +1,68 @@
+:root {
+  --brand-teal: #1f6f5c;
+  --brand-teal-dark: #164f41;
+  --brand-amber: #d98a2b;
+  --bg-soft: #f6f8f7;
+}
+
+body {
+  background-color: var(--bg-soft);
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.app-navbar {
+  background: linear-gradient(90deg, var(--brand-teal-dark), var(--brand-teal));
+}
+
+.card {
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.card .card-header {
+  border-radius: 14px 14px 0 0;
+  font-weight: 600;
+}
+
+.stat-card {
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  color: #fff;
+}
+
+.stat-card h3 {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.stat-card small {
+  opacity: 0.85;
+}
+
+.bg-brand { background: var(--brand-teal); }
+.bg-brand-amber { background: var(--brand-amber); }
+.bg-brand-dark { background: var(--brand-teal-dark); }
+
+.btn-brand {
+  background-color: var(--brand-teal);
+  border-color: var(--brand-teal);
+  color: #fff;
+}
+.btn-brand:hover {
+  background-color: var(--brand-teal-dark);
+  border-color: var(--brand-teal-dark);
+  color: #fff;
+}
+
+.table thead th {
+  background-color: #eef4f2;
+  border-bottom: 2px solid var(--brand-teal);
+}
+
+.badge-aman { background-color: #2e7d32; }
+.badge-pesan { background-color: #c62828; }
+
+@media (max-width: 576px) {
+  .stat-card h3 { font-size: 1.4rem; }
+}

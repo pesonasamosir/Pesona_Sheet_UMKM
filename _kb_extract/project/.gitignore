@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+venv/
+database/app.db
+uploads/*.xlsx
+exports/*.xlsx
+exports/*.pdf
+.env

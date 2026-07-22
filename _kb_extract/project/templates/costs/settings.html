@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field %}
+{% block title %}Asumsi{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-sliders"></i> Asumsi (Parameter Umum)</h4>
+<div class="card" style="max-width: 480px;">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      {{ render_field(form.hari_kerja_per_bulan) }}
+      <p class="text-muted small">Hari kerja efektif UMKM, tidak termasuk hari libur.</p>
+      {{ render_field(form.bulan_per_tahun) }}
+      <p class="text-muted small">Untuk konversi permintaan bulanan menjadi permintaan tahunan.</p>
+      <button class="btn btn-brand" type="submit"><i class="bi bi-check-lg"></i> Simpan</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

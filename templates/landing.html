@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}PESONA — Inventori & Finansial UMKM{% endblock %}
+{% block body_class %}{% endblock %}
+{% block body %}
+<main class="landing-hero">
+  <div class="hero-grain" aria-hidden="true"></div>
+  <div class="hero-ambient" aria-hidden="true"></div>
+
+  <div class="landing-wrap">
+    <header class="site-header landing-header">
+      <a class="brand-link" href="{{ url_for('dashboard.landing') }}">
+        <span class="brand-mark" aria-hidden="true">P</span>
+        <span>
+          <span class="brand-name">PESONA</span>
+          <span class="brand-tag">Inventori &amp; Finansial UMKM</span>
+        </span>
+      </a>
+      <nav class="nav-desktop" aria-label="Navigasi utama">
+        <a class="nav-pill" href="{{ url_for('dashboard.index') }}">Dashboard</a>
+        <a class="nav-pill" href="{{ url_for('inventory.list_materials') }}">Inventori</a>
+        <a class="nav-pill" href="{{ url_for('cashflow.list_cashflow') }}">Arus Kas</a>
+      </nav>
+    </header>
+
+    <div class="landing-body">
+      <div class="landing-grid">
+        <div>
+          <p class="landing-eyebrow">PESONA</p>
+          <p class="landing-sub">Inventori &amp; Finansial UMKM</p>
+          <h1 class="landing-headline">Dari sheet Excel ke keputusan usaha — dalam hitungan detik.</h1>
+          <p class="landing-copy">
+            Untuk pelaku UMKM: catat biaya, pantau stok dengan EOQ &amp; LFL, lalu lihat profit arus kas tanpa mengutak-atik rumus spreadsheet.
+          </p>
+
+          <section class="landing-aside" aria-labelledby="sheet-heading">
+            <p class="landing-eyebrow">Dari sheet yang Anda kenal</p>
+            <h2 id="sheet-heading">Semua formula di Sheet Inventori &amp; Finansial sudah diubah menjadi perhitungan otomatis di aplikasi.</h2>
+            <p>
+              Biaya tetap, overhead, variable cost per produk, status reorder, revenue, dan margin — terhubung dalam satu dashboard.
+            </p>
+          </section>
+        </div>
+
+        <div class="landing-action-panel">
+          <div class="landing-mark-wrap">
+            <div class="landing-mark" aria-hidden="true">
+              P
+              <span class="orb orb-cta">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+              </span>
+              <span class="orb orb-soft">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+              </span>
+            </div>
+          </div>
+
+          <p class="landing-eyebrow">Mulai dari fitur yang Anda butuhkan</p>
+          <ul class="landing-feature-list">
+            <li>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+              <span>Hitung EOQ, safety stock, dan reorder point — tahu bahan mana yang harus segera dipesan.</span>
+            </li>
+            <li>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+              <span>Pantau revenue, total cost, profit, dan margin per produk setiap bulan.</span>
+            </li>
+          </ul>
+
+          <div class="landing-cta-stack">
+            <a class="landing-cta-primary" href="{{ url_for('dashboard.index') }}">
+              Buka Dashboard
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+            <a class="landing-cta-secondary" href="{{ url_for('inventory.list_materials') }}">
+              Cek Inventori
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+          </div>
+          <p class="landing-note">Impor sheet Excel Anda kapan saja lewat menu Data.</p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="landing-footer">
+      <p>PESONA · untuk pelaku UMKM yang ingin bisnis lebih terukur</p>
+      <p class="fine">Berdasarkan Sheet Inventori dan Finansial UMKM</p>
+    </footer>
+  </div>
+</main>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Kesalahan Server · PESONA{% endblock %}
+{% block content %}
+<header class="page-header" style="text-align:center;max-width:none;margin:3rem auto;">
+  <p class="landing-eyebrow" style="color:var(--destructive);">500</p>
+  <h1 class="page-title">Terjadi kesalahan</h1>
+  <p class="page-lead">Silakan coba lagi, atau kembali ke dashboard.</p>
+  <div class="row-actions" style="justify-content:center;">
+    <a href="{{ url_for('dashboard.index') }}" class="btn-brand">Kembali ke Dashboard</a>
+  </div>
+</header>
+{% endblock %}

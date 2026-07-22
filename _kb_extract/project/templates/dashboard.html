@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - UMKM App{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-speedometer2"></i> Ringkasan Dashboard</h4>
+
+<div class="row g-3 mb-3">
+  <div class="col-6 col-md-3">
+    <div class="stat-card bg-brand">
+      <small>PRODUK TERDAFTAR</small>
+      <h3>{{ summary.jumlah_produk }}</h3>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card bg-brand-dark">
+      <small>BAHAN BAKU TERDAFTAR</small>
+      <h3>{{ summary.jumlah_bahan_baku }}</h3>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card bg-brand-amber">
+      <small>PERLU SEGERA PESAN (EOQ)</small>
+      <h3>{{ summary.reorder_needed_eoq }}</h3>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card" style="background:#8e44ad;">
+      <small>PERLU SEGERA PESAN (LFL)</small>
+      <h3>{{ summary.reorder_needed_lfl }}</h3>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header bg-white">Ringkasan Biaya Bulanan</div>
+      <div class="card-body">
+        <table class="table mb-0">
+          <tr><td>Total Fixed Cost</td><td class="text-end fw-semibold">{{ summary.total_fixed_cost|rupiah }}</td></tr>
+          <tr><td>Total Overhead Teralokasi</td><td class="text-end fw-semibold">{{ summary.total_overhead_cost|rupiah }}</td></tr>
+          <tr><td>Total Variable Cost (berjalan)</td><td class="text-end fw-semibold">{{ summary.total_variable_cost_running|rupiah }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header bg-white">Ringkasan Profit Bulanan</div>
+      <div class="card-body">
+        <table class="table mb-0">
+          <tr><td>Total Revenue</td><td class="text-end fw-semibold">{{ summary.total_revenue|rupiah }}</td></tr>
+          <tr><td>Total Cost</td><td class="text-end fw-semibold">{{ summary.total_cost|rupiah }}</td></tr>
+          <tr><td>Total Profit</td><td class="text-end fw-semibold text-success">{{ summary.total_profit|rupiah }}</td></tr>
+          <tr><td>Profit Margin Rata-rata</td><td class="text-end fw-semibold">{{ summary.average_profit_margin_pct|percent }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mt-4 d-flex flex-wrap gap-2">
+  <a href="{{ url_for('products.add_product') }}" class="btn btn-brand"><i class="bi bi-plus-lg"></i> Tambah Produk</a>
+  <a href="{{ url_for('inventory.add_material') }}" class="btn btn-outline-secondary"><i class="bi bi-plus-lg"></i> Tambah Bahan Baku</a>
+  <a href="{{ url_for('cashflow.add_cashflow') }}" class="btn btn-outline-secondary"><i class="bi bi-plus-lg"></i> Catat Arus Kas</a>
+</div>
+{% endblock %}

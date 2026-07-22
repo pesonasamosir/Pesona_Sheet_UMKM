@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Halaman Tidak Ditemukan · PESONA{% endblock %}
+{% block content %}
+<header class="page-header" style="text-align:center;max-width:none;margin:3rem auto;">
+  <p class="landing-eyebrow" style="color:var(--primary);">404</p>
+  <h1 class="page-title">Halaman tidak ditemukan</h1>
+  <p class="page-lead">Alamat yang Anda buka tidak ada di PESONA.</p>
+  <div class="row-actions" style="justify-content:center;">
+    <a href="{{ url_for('dashboard.landing') }}" class="btn-ghost">Beranda</a>
+    <a href="{{ url_for('dashboard.index') }}" class="btn-brand">Buka Dashboard</a>
+  </div>
+</header>
+{% endblock %}

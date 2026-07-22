@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+<h4 class="mb-1">{{ product.name }}</h4>
+<p class="text-muted">Harga Jual: {{ product.selling_price|rupiah }} &middot; Total Variable Cost/Unit: <strong>{{ product.total_variable_cost_per_unit|rupiah }}</strong></p>
+
+<div class="row g-3">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header bg-white">Komponen Biaya Variabel (Bahan/Komponen per Unit)</div>
+      <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+          <thead><tr><th>Nama</th><th>Satuan</th><th class="text-end">Qty/Unit</th><th class="text-end">Harga/Satuan</th><th class="text-end">Biaya/Unit</th><th></th></tr></thead>
+          <tbody>
+          {% for c in product.components %}
+            <tr>
+              <td>{{ c.component_name }}</td>
+              <td>{{ c.unit }}</td>
+              <td class="text-end">{{ c.qty_per_unit|numfmt }}</td>
+              <td class="text-end">{{ c.price_per_unit|rupiah }}</td>
+              <td class="text-end">{{ c.cost_per_unit|rupiah }}</td>
+              <td class="text-end">
+                <form action="{{ url_for('products.delete_component', component_id=c.id) }}" method="post" class="confirm-delete">
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-3">Belum ada komponen.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header bg-white">Tambah Komponen</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('products.add_component', product_id=product.id) }}" novalidate>
+          {{ form.hidden_tag() }}
+          {{ render_field(form.component_name) }}
+          {{ render_field(form.unit) }}
+          {{ render_field(form.qty_per_unit) }}
+          {{ render_field(form.price_per_unit) }}
+          <button class="btn btn-brand w-100" type="submit"><i class="bi bi-plus-lg"></i> Tambah</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="{{ url_for('products.list_products') }}" class="btn btn-link mt-3">&larr; Kembali ke Daftar Produk</a>
+{% endblock %}

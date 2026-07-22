@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}UMKM Inventori & Finansial{% endblock %}</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark app-navbar sticky-top">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="{{ url_for('dashboard.index') }}"><i class="bi bi-shop"></i> UMKM App</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard.index') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('products.list_products') }}"><i class="bi bi-box-seam"></i> Produk</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-cash-coin"></i> Biaya</a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ url_for('costs.fixed_cost') }}">Biaya Tetap</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('costs.overhead_cost') }}">Biaya Tidak Langsung</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('costs.settings') }}">Asumsi</a></li>
+          </ul>
+        </li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('inventory.list_materials') }}"><i class="bi bi-boxes"></i> Inventori</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('cashflow.list_cashflow') }}"><i class="bi bi-graph-up-arrow"></i> Arus Kas</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-arrow-left-right"></i> Data</a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ url_for('data_io.import_excel') }}">Import Excel</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('data_io.export_excel') }}">Export Excel</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('data_io.export_pdf') }}">Export PDF</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('history.list_history') }}">Riwayat Perhitungan</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main class="container-fluid px-3 px-md-4 py-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category=='danger' else category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

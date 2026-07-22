@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · PESONA{% endblock %}
+{% block content %}
+<header class="page-header">
+  <h1 class="page-title">Ringkasan Dashboard</h1>
+  <p class="page-lead">Satu layar untuk biaya, profit, dan status reorder — tanpa pindah sheet.</p>
+</header>
+
+<section class="info-band">
+  Aplikasi ini menggantikan spreadsheet Inventori &amp; Finansial UMKM. Angka dihitung otomatis dari data produk, biaya, bahan baku, dan arus kas yang Anda isi.
+</section>
+
+<div class="stat-grid">
+  <div class="stat-tile stat-tile--forest">
+    <small>Produk terdaftar</small>
+    <strong>{{ summary.jumlah_produk }}</strong>
+  </div>
+  <div class="stat-tile stat-tile--primary">
+    <small>Bahan baku</small>
+    <strong>{{ summary.jumlah_bahan_baku }}</strong>
+  </div>
+  <div class="stat-tile stat-tile--warn">
+    <small>Segera pesan (EOQ)</small>
+    <strong>{{ summary.reorder_needed_eoq }}</strong>
+  </div>
+  <div class="stat-tile stat-tile--cta">
+    <small>Segera pesan (LFL)</small>
+    <strong>{{ summary.reorder_needed_lfl }}</strong>
+  </div>
+</div>
+
+<div class="split-2">
+  <div class="panel">
+    <div class="panel-head">Ringkasan Biaya Bulanan</div>
+    <div class="panel-body">
+      <div class="metric-row"><span>Total Fixed Cost</span><strong>{{ summary.total_fixed_cost|rupiah }}</strong></div>
+      <div class="metric-row"><span>Total Overhead Teralokasi</span><strong>{{ summary.total_overhead_cost|rupiah }}</strong></div>
+      <div class="metric-row"><span>Total Variable Cost (berjalan)</span><strong>{{ summary.total_variable_cost_running|rupiah }}</strong></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head">Ringkasan Profit Bulanan</div>
+    <div class="panel-body">
+      <div class="metric-row"><span>Total Revenue</span><strong>{{ summary.total_revenue|rupiah }}</strong></div>
+      <div class="metric-row"><span>Total Cost</span><strong>{{ summary.total_cost|rupiah }}</strong></div>
+      <div class="metric-row"><span>Total Profit</span><strong class="text-success">{{ summary.total_profit|rupiah }}</strong></div>
+      <div class="metric-row"><span>Profit Margin Rata-rata</span><strong>{{ summary.average_profit_margin_pct|percent }}</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="row-actions">
+  <a href="{{ url_for('products.add_product') }}" class="btn-brand">Tambah Produk</a>
+  <a href="{{ url_for('inventory.add_material') }}" class="btn-ghost">Tambah Bahan Baku</a>
+  <a href="{{ url_for('cashflow.add_cashflow') }}" class="btn-ghost">Catat Arus Kas</a>
+  <a href="{{ url_for('data_io.import_excel') }}" class="btn-soft">Import Excel</a>
+</div>
+{% endblock %}
+

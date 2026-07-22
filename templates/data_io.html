@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field %}
+{% block title %}Import & Export · PESONA{% endblock %}
+{% block content %}
+<header class="page-header">
+  <h1 class="page-title">Import &amp; Export</h1>
+  <p class="page-lead">Bawa data dari sheet Excel, atau unduh hasil perhitungan.</p>
+</header>
+
+<div class="split-2">
+  <div class="panel">
+    <div class="panel-head">Import dari Excel (.xlsx)</div>
+    <div class="panel-body">
+      <p class="page-lead" style="margin-bottom:1rem;">
+        Upload file dengan struktur sheet yang sama seperti template asli
+        (Biaya Tetap, Biaya Variabel, Biaya Tidak Langsung, Inventori Harian).
+        Data yang sudah ada (dicocokkan berdasarkan nama) akan diperbarui.
+      </p>
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {{ form.hidden_tag() }}
+        {{ render_field(form.file) }}
+        <button class="btn-brand" type="submit">Import</button>
+      </form>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head">Export Hasil</div>
+    <div class="panel-body stack-md">
+      <a href="{{ url_for('data_io.export_excel') }}" class="btn-ghost btn-block">Export ke Excel (.xlsx)</a>
+      <a href="{{ url_for('data_io.export_pdf') }}" class="btn-ghost btn-block">Export Laporan PDF</a>
+      <a href="{{ url_for('history.list_history') }}" class="btn-soft btn-block">Lihat Riwayat Perhitungan</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

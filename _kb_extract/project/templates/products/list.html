@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Daftar Produk{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h4><i class="bi bi-box-seam"></i> Master Data Produk</h4>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('products.categories') }}" class="btn btn-outline-secondary"><i class="bi bi-tags"></i> Kelola Kategori</a>
+    <a href="{{ url_for('products.add_product') }}" class="btn btn-brand"><i class="bi bi-plus-lg"></i> Tambah Produk</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table mb-0 align-middle">
+      <thead>
+        <tr>
+          <th>Nama Produk</th>
+          <th>Kategori</th>
+          <th class="text-end">Harga Jual</th>
+          <th class="text-end">Total Variable Cost/Unit</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td><a href="{{ url_for('products.detail_product', product_id=p.id) }}">{{ p.name }}</a></td>
+          <td>{{ p.category.name if p.category else "-" }}</td>
+          <td class="text-end">{{ p.selling_price|rupiah }}</td>
+          <td class="text-end">{{ p.total_variable_cost_per_unit|rupiah }}</td>
+          <td class="text-end">
+            <a href="{{ url_for('products.edit_product', product_id=p.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+            <form action="{{ url_for('products.delete_product', product_id=p.id) }}" method="post" class="d-inline confirm-delete">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center text-muted py-4">Belum ada produk. Klik "Tambah Produk" untuk mulai.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

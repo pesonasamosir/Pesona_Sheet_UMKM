@@ -1,0 +1,11 @@
+{% macro render_field(field) %}
+<div class="mb-3">
+  {{ field.label(class="form-label fw-semibold") }}
+  {{ field(class="form-select" if field.type == "SelectField" else "form-control", **kwargs) }}
+  {% if field.errors %}
+    <div class="text-danger small mt-1">
+      {% for error in field.errors %}{{ error }}<br>{% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endmacro %}

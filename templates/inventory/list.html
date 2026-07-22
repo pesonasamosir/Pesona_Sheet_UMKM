@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Inventori · PESONA{% endblock %}
+{% block content %}
+<header class="page-header">
+  <h1 class="page-title">Inventori</h1>
+  <p class="page-lead">Model EOQ + Safety Stock dibanding LFL + Safety Stock — status reorder langsung terlihat.</p>
+</header>
+
+<section class="info-band">
+  Isi permintaan, lead time, dan biaya pemesanan/simpan. Aplikasi menghitung EOQ, safety stock, ROP, dan status “Segera Pesan”.
+</section>
+
+<div class="toolbar">
+  <div></div>
+  <div class="toolbar-actions">
+    <a href="{{ url_for('inventory.add_material') }}" class="btn-brand">Tambah Bahan Baku</a>
+  </div>
+</div>
+
+<div class="panel panel-flush">
+  <div class="table-wrap">
+    <table class="data-table small">
+      <thead>
+        <tr>
+          <th>Bahan Baku</th>
+          <th class="text-end">Perm. Harian Rata2</th>
+          <th class="text-end">Perm. Harian Maks</th>
+          <th class="text-end">Perm. Tahunan</th>
+          <th class="text-end">EOQ</th>
+          <th class="text-end">Safety Stock</th>
+          <th class="text-end">ROP</th>
+          <th>Status EOQ</th>
+          <th class="text-end">Kebutuhan Bln Depan (LFL)</th>
+          <th class="text-end">Jumlah Pesan (LFL)</th>
+          <th>Status LFL</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results %}
+        <tr>
+          <td><a href="{{ url_for('inventory.detail_material', material_id=r.material_id) }}">{{ r.material_name }}</a></td>
+          <td class="text-end">{{ r.permintaan_harian_rata2|numfmt(2) }}</td>
+          <td class="text-end">{{ r.permintaan_harian_maksimum|numfmt(2) }}</td>
+          <td class="text-end">{{ r.permintaan_tahunan|numfmt(0) }}</td>
+          <td class="text-end">{{ r.eoq }}</td>
+          <td class="text-end">{{ r.safety_stock }}</td>
+          <td class="text-end">{{ r.reorder_point }}</td>
+          <td><span class="badge {{ 'badge-pesan' if r.status_reorder_eoq == 'Segera Pesan' else 'badge-aman' }}">{{ r.status_reorder_eoq }}</span></td>
+          <td class="text-end">{{ r.kebutuhan_bulan_depan_lfl|numfmt(0) }}</td>
+          <td class="text-end">{{ r.jumlah_pesan_lfl|numfmt(0) }}</td>
+          <td><span class="badge {{ 'badge-pesan' if r.status_reorder_lfl == 'Segera Pesan' else 'badge-aman' }}">{{ r.status_reorder_lfl }}</span></td>
+          <td class="text-end">
+            <a href="{{ url_for('inventory.edit_material', material_id=r.material_id) }}" class="btn-ghost btn-sm">Edit</a>
+            <form action="{{ url_for('inventory.delete_material', material_id=r.material_id) }}" method="post" class="d-inline confirm-delete">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn-danger-outline" type="submit">Hapus</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="12" class="empty-state">Belum ada bahan baku.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
