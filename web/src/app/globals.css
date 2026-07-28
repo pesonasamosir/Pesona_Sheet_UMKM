@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f4f6f4;
+  --bg-elevated: #ffffff;
+  --fg: #141a16;
+  --muted: #5b6b60;
+  --border: #d7e0d9;
+  --primary: #1f6b3a;
+  --primary-fg: #ffffff;
+  --primary-soft: #e5f3ea;
+  --danger: #b42318;
+  --danger-soft: #fef3f2;
+  --warn: #b54708;
+  --warn-soft: #fffaeb;
+  --ok: #067647;
+  --ok-soft: #ecfdf3;
+  --sidebar: #101712;
+  --sidebar-fg: #e8eee9;
+  --sidebar-muted: #9aada0;
+  --ring: #1f6b3a55;
+  --shadow: 0 1px 2px rgb(16 23 18 / 0.04), 0 8px 24px rgb(16 23 18 / 0.06);
+  --radius: 0.875rem;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark {
+  --bg: #0c100e;
+  --bg-elevated: #151b17;
+  --fg: #eef3ef;
+  --muted: #9aada0;
+  --border: #2a342d;
+  --primary: #3d9a52;
+  --primary-fg: #041208;
+  --primary-soft: #163222;
+  --danger: #f97066;
+  --danger-soft: #2a1513;
+  --warn: #fdb022;
+  --warn-soft: #2a1f0a;
+  --ok: #47cd89;
+  --ok-soft: #0f2a1c;
+  --sidebar: #070a08;
+  --sidebar-fg: #e8eee9;
+  --sidebar-muted: #7f9486;
+  --ring: #3d9a5255;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 10px 28px rgb(0 0 0 / 0.35);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-elevated: var(--bg-elevated);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-soft: var(--primary-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-fg: var(--sidebar-fg);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 28%, transparent);
+}
