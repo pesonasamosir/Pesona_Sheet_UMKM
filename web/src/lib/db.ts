@@ -29,7 +29,8 @@ class PesonaDB extends Dexie {
   meta!: EntityTable<AppMeta, "id">;
 
   constructor() {
-    super("pesona_umkm_v1");
+    // v2: empty-by-default (no auto-seed). Bumps DB name so prior dummy rows are not reused.
+    super("pesona_umkm_v2");
     this.version(1).stores({
       categories: "id, name",
       products: "id, name, categoryId",

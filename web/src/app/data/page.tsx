@@ -104,10 +104,14 @@ export default function DataPage() {
         </Card>
       </div>
 
-      <Card title="Utilitas data contoh" className="mt-4">
+      <Card title="Utilitas data" className="mt-4">
+        <p className="mb-3 text-sm text-muted">
+          Kunjungan pertama dan setelah hapus data: semuanya kosong (0 / tanpa
+          entri). Data dummy Excel hanya dimuat jika Anda tekan tombol di bawah.
+        </p>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => setConfirmReseed(true)}>
-            <RotateCcw className="size-4" /> Muat Ulang Data Dummy Excel
+            <RotateCcw className="size-4" /> Muat Data Dummy Excel (opsional)
           </Button>
           <Button variant="danger" onClick={() => setConfirmWipe(true)}>
             <Trash2 className="size-4" /> Hapus Semua Data Lokal
@@ -129,13 +133,13 @@ export default function DataPage() {
       <ConfirmDialog
         open={confirmWipe}
         title="Hapus semua data lokal?"
-        message="Tindakan ini menghapus seluruh data PESONA di browser ini dan tidak bisa dibatalkan kecuali Anda punya file backup."
+        message="Semua produk, biaya, inventori, dan arus kas di browser ini akan dikosongkan (nilai 0, tanpa entri contoh). Tidak bisa dibatalkan kecuali Anda punya file backup."
         confirmLabel="Hapus semua"
         onCancel={() => setConfirmWipe(false)}
         onConfirm={async () => {
           await wipe();
           setConfirmWipe(false);
-          setMessage("Semua data lokal telah dihapus.");
+          setMessage("Semua data lokal telah dikosongkan. Tidak ada entri tersisa.");
         }}
       />
 

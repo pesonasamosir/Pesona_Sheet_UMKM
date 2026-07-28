@@ -83,13 +83,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<StoreData | null>(null);
 
   const refresh = useCallback(async () => {
+    // Never auto-seed: first visit and post-wipe stay empty (zeros / no rows).
+    // Dummy Excel data is only loaded via explicit seed(true) from Data page.
     const all = await loadAllData();
-    if (!all.meta.seeded && all.products.length === 0) {
-      await seedSampleData(false);
-      setData(await loadAllData());
-    } else {
-      setData(all);
-    }
+    setData(all);
     setReady(true);
   }, []);
 
