@@ -7,7 +7,7 @@ DATA DUMMY untuk menguji struktur perhitungan -- BUKAN data riil UMKM.
 Jalankan: python seed_data.py
 """
 
-from app import create_app
+from flask_app import create_app
 from models import db, Category, Product, VariableCostComponent, FixedCost, OverheadCost, Material, CashFlowEntry
 
 

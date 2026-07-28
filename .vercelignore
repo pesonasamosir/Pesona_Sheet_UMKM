@@ -1,0 +1,12 @@
+# Keep Vercel focused on the Next.js app in /web
+venv
+**/venv
+__pycache__
+**/__pycache__
+database
+uploads
+exports
+_kb_extract
+.cursor
+*.xlsx
+debug-*.log

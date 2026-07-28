@@ -1,0 +1,16 @@
+{
+  "name": "pesona-sheet-umkm",
+  "private": true,
+  "description": "Deploy root — Next.js app lives in /web (IndexedDB, privacy-first).",
+  "scripts": {
+    "dev": "npm --prefix web run dev",
+    "build": "npm --prefix web run build",
+    "start": "npm --prefix web run start",
+    "lint": "npm --prefix web run lint",
+    "verify:formulas": "npm --prefix web run verify:formulas",
+    "verify:deploy-target": "node scripts/verify-deploy-target.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

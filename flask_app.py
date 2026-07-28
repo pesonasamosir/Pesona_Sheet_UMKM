@@ -1,7 +1,8 @@
 """
-Entry point aplikasi. Jalankan dengan:
-    python app.py
-atau untuk production, gunakan gunicorn (lihat docs/README.md).
+Legacy Flask entry (local only). Do NOT deploy to Vercel — /var/task is read-only
+and SQLite makedirs fails with Errno 30. Production app: Next.js in /web.
+
+Run locally: python flask_app.py
 """
 
 import os
@@ -19,6 +20,27 @@ def create_app(env=None):
     env = env or os.environ.get("FLASK_ENV", "development")
     app = Flask(__name__)
     app.config.from_object(config_by_name[env])
+
+    # #region agent log
+    try:
+        import json, time
+        _log_path = os.path.join(os.path.dirname(__file__), "debug-90c741.log")
+        with open(_log_path, "a", encoding="utf-8") as _f:
+            _f.write(json.dumps({
+                "sessionId": "90c741",
+                "runId": "flask-boot",
+                "hypothesisId": "B",
+                "location": "flask_app.py:create_app",
+                "message": "Flask create_app about to makedirs",
+                "data": {
+                    "db_uri": app.config.get("SQLALCHEMY_DATABASE_URI"),
+                    "cwd": os.getcwd(),
+                },
+                "timestamp": int(time.time() * 1000),
+            }) + "\n")
+    except Exception:
+        pass
+    # #endregion
 
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
     os.makedirs(app.config["EXPORT_FOLDER"], exist_ok=True)
