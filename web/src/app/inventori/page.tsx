@@ -50,7 +50,7 @@ export default function InventoriPage() {
     <div>
       <PageHeader
         title="Inventori & EOQ"
-        lead="Model EOQ + Safety Stock vs LFL + Safety Stock — rumus 1:1 dari sheet Inventori Harian."
+        lead="Perhitungan EOQ vs LFL (dengan Safety Stock) untuk menentukan EOQ, ROP, dan rekomendasi pemesanan bahan baku."
         actions={
           <Link href="/inventori/mingguan">
             <Button variant="secondary">Inventori Mingguan</Button>

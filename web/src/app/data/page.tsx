@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Upload, ShieldCheck, RotateCcw, Trash2, FileJson, FileSpreadsheet } from "lucide-react";
+import { Upload, ShieldCheck, Trash2, FileJson, FileSpreadsheet } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { exportExcel, exportJson, parseJsonFile } from "@/lib/io";
 import {
@@ -13,11 +13,10 @@ import {
 } from "@/components/ui";
 
 export default function DataPage() {
-  const { ready, data, seed, wipe, importSnapshot } = useStore();
+  const { ready, data, wipe, importSnapshot } = useStore();
   const jsonRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [confirmWipe, setConfirmWipe] = useState(false);
-  const [confirmReseed, setConfirmReseed] = useState(false);
 
   if (!ready || !data) return <p className="text-sm text-muted">Memuat…</p>;
 
@@ -107,12 +106,9 @@ export default function DataPage() {
       <Card title="Utilitas data" className="mt-4">
         <p className="mb-3 text-sm text-muted">
           Kunjungan pertama dan setelah hapus data: semuanya kosong (0 / tanpa
-          entri). Data dummy Excel hanya dimuat jika Anda tekan tombol di bawah.
+          entri). Gunakan backup (Excel/JSON) jika ingin memulihkan data.
         </p>
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" onClick={() => setConfirmReseed(true)}>
-            <RotateCcw className="size-4" /> Muat Data Dummy Excel (opsional)
-          </Button>
           <Button variant="danger" onClick={() => setConfirmWipe(true)}>
             <Trash2 className="size-4" /> Hapus Semua Data Lokal
           </Button>
@@ -143,18 +139,6 @@ export default function DataPage() {
         }}
       />
 
-      <ConfirmDialog
-        open={confirmReseed}
-        title="Ganti dengan data dummy?"
-        message="Data lokal saat ini akan diganti dengan contoh dari Sheet Inventori dan Finansial UMKM."
-        confirmLabel="Ya, muat dummy"
-        onCancel={() => setConfirmReseed(false)}
-        onConfirm={async () => {
-          await seed(true);
-          setConfirmReseed(false);
-          setMessage("Data dummy Excel berhasil dimuat.");
-        }}
-      />
     </div>
   );
 }
