@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -14,22 +14,32 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Plus, Download, AlertTriangle } from "lucide-react";
+import { Plus, Download, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { percent, rupiah } from "@/lib/format";
 import { Button, Card, PageHeader, StatTile, Badge } from "@/components/ui";
 import { exportExcel } from "@/lib/io";
 
+const PRODUCT_COLORS = [
+  "#1f6b3a", "#3d9a52", "#b54708", "#067647",
+  "#1e3a24", "#8a5612", "#2f6b3a", "#0f5132",
+];
+
 export default function DashboardPage() {
   const { ready, data, summary, inventoryRows } = useStore();
+  const [monthIdx, setMonthIdx] = useState(0);
 
-  const profitByMonth = useMemo(() => {
-    if (!summary?.monthlySeries?.length) return [];
-    return summary.monthlySeries.map((m) => ({
-      month: m.month,
-      profit: m.profit,
-    }));
-  }, [summary]);
+  const profitChart = useMemo(
+    () => summary?.profitByProductMonth ?? { products: [] as string[], series: [] as Record<string, string | number>[] },
+    [summary],
+  );
+
+  // clamp monthIdx whenever series length changes
+  const safeIdx = profitChart.series.length
+    ? Math.min(monthIdx, profitChart.series.length - 1)
+    : 0;
+  const currentMonthData = profitChart.series[safeIdx];
+  const currentMonth = currentMonthData ? String(currentMonthData.month) : "";
 
   if (!ready || !data || !summary) {
     return <p className="text-sm text-muted">Memuat data lokal…</p>;
@@ -131,15 +141,45 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <Card title="Profit per Bulan (Rp)" className="mt-4">
-        {profitByMonth.length === 0 ? (
+      <Card
+        title={currentMonth ? `Profit per Produk — ${currentMonth}` : "Profit per Produk per Bulan (Rp)"}
+        className="mt-4"
+        action={
+          profitChart.series.length > 0 ? (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                type="button"
+                onClick={() => setMonthIdx((i) => Math.max(0, i - 1))}
+                disabled={safeIdx === 0}
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <span className="min-w-[4rem] text-center text-xs text-muted">
+                {safeIdx + 1} / {profitChart.series.length}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                type="button"
+                onClick={() => setMonthIdx((i) => Math.min(profitChart.series.length - 1, i + 1))}
+                disabled={safeIdx === profitChart.series.length - 1}
+              >
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          ) : null
+        }
+      >
+        {!currentMonthData || profitChart.products.length === 0 ? (
           <p className="text-sm text-muted">
-            Belum ada data arus kas. Catat penjualan untuk melihat profit per bulan.
+            Belum ada data arus kas. Catat penjualan untuk melihat profit per produk.
           </p>
         ) : (
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={profitByMonth}>
+              <BarChart data={[currentMonthData]} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="month" tick={{ fill: "var(--muted)", fontSize: 12 }} />
                 <YAxis
@@ -153,19 +193,23 @@ export default function DashboardPage() {
                   }
                 />
                 <Tooltip
-                  formatter={(value) => [rupiah(Number(value ?? 0)), "Profit"]}
+                  formatter={(value, name) => [rupiah(Number(value ?? 0)), String(name)]}
                   contentStyle={{
                     background: "var(--bg-elevated)",
                     border: "1px solid var(--border)",
                     borderRadius: 12,
                   }}
                 />
-                <Bar
-                  dataKey="profit"
-                  name="Profit"
-                  fill="#1f6b3a"
-                  radius={[6, 6, 0, 0]}
-                />
+                <Legend />
+                {profitChart.products.map((name, i) => (
+                  <Bar
+                    key={name}
+                    dataKey={name}
+                    name={name}
+                    fill={PRODUCT_COLORS[i % PRODUCT_COLORS.length]}
+                    radius={[6, 6, 0, 0]}
+                  />
+                ))}
               </BarChart>
             </ResponsiveContainer>
           </div>

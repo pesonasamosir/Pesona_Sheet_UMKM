@@ -63,6 +63,7 @@ type StoreContextValue = {
   deleteMaterial: (id: string) => Promise<void>;
   // Cashflow
   addCashflow: (e: Omit<CashFlowEntry, "id">) => Promise<void>;
+  updateCashflow: (e: CashFlowEntry) => Promise<void>;
   deleteCashflow: (id: string) => Promise<void>;
   // Weekly
   upsertWeeklyPlan: (p: WeeklyPlan) => Promise<void>;
@@ -320,6 +321,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             monthLabel: e.monthLabel.trim(),
             id: newId(),
           });
+        }),
+      updateCashflow: (e) =>
+        mutate(async () => {
+          const monthKey = normalizeKey(e.monthLabel);
+          const dup = (await getDB().cashflow.toArray()).some(
+            (x) =>
+              x.id !== e.id &&
+              x.productId === e.productId &&
+              normalizeKey(x.monthLabel) === monthKey,
+          );
+          if (dup) {
+            throw new DuplicateError(
+              "Entri arus kas untuk produk & bulan ini sudah ada.",
+            );
+          }
+          await getDB().cashflow.put({ ...e, monthLabel: e.monthLabel.trim() });
         }),
       deleteCashflow: (id) =>
         mutate(async () => {

@@ -334,7 +334,30 @@ export function dashboardSummary(args: {
     jumlahProduk: args.products.length,
     jumlahBahanBaku: args.materials.length,
     monthlySeries: buildMonthlySeries(rows),
+    profitByProductMonth: buildProfitByProductMonth(rows),
   };
+}
+
+/** One object per month; keys = product names, value = profit Rp. */
+function buildProfitByProductMonth(rows: CashFlowResult[]) {
+  const months: string[] = [];
+  const products: string[] = [];
+  for (const r of rows) {
+    if (!months.includes(r.monthLabel)) months.push(r.monthLabel);
+    if (!products.includes(r.productName)) products.push(r.productName);
+  }
+  const series = months.map((month) => {
+    const row: Record<string, string | number> = { month };
+    for (const name of products) {
+      // Sum profit for entries with same month + product name
+      const total = rows
+        .filter((r) => r.monthLabel === month && r.productName === name)
+        .reduce((s, r) => s + r.profit, 0);
+      row[name] = round2(total);
+    }
+    return row;
+  });
+  return { products, series };
 }
 
 function buildMonthlySeries(rows: CashFlowResult[]) {
