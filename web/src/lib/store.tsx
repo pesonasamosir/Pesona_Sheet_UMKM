@@ -18,9 +18,9 @@ import {
   type StoreData,
 } from "./db";
 import { seedSampleData } from "./seed";
+import { DuplicateError, normalizeKey } from "./duplicates";
 import type {
   CashFlowEntry,
-  Category,
   FixedCost,
   Material,
   OverheadCost,
@@ -50,7 +50,7 @@ type StoreContextValue = {
   deleteProduct: (id: string) => Promise<void>;
   addComponent: (c: Omit<VariableCostComponent, "id">) => Promise<void>;
   deleteComponent: (id: string) => Promise<void>;
-  addCategory: (name: string) => Promise<void>;
+  addCategory: (name: string) => Promise<string>;
   deleteCategory: (id: string) => Promise<void>;
   // Costs
   addFixed: (f: Omit<FixedCost, "id">) => Promise<void>;
@@ -75,6 +75,8 @@ type StoreContextValue = {
   cashflowRows: ReturnType<typeof calculateAllCashflow>;
   hppOf: (productId: string) => number;
 };
+
+export { DuplicateError } from "./duplicates";
 
 const StoreContext = createContext<StoreContextValue | null>(null);
 
@@ -138,8 +140,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addProduct: async (p) => {
         const id = newId();
         await mutate(async () => {
+          const key = normalizeKey(p.name);
+          if (!key) throw new DuplicateError("Nama produk tidak boleh kosong.");
+          const existing = (await getDB().products.toArray()).some(
+            (x) => normalizeKey(x.name) === key,
+          );
+          if (existing) {
+            throw new DuplicateError(
+              `Produk "${p.name.trim()}" sudah ada. Gunakan nama lain atau edit yang sudah ada.`,
+            );
+          }
           await getDB().products.add({
             ...p,
+            name: p.name.trim(),
             id,
             createdAt: new Date().toISOString(),
           });
@@ -148,7 +161,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       },
       updateProduct: (p) =>
         mutate(async () => {
-          await getDB().products.put(p);
+          const key = normalizeKey(p.name);
+          const clash = (await getDB().products.toArray()).some(
+            (x) => x.id !== p.id && normalizeKey(x.name) === key,
+          );
+          if (clash) {
+            throw new DuplicateError(
+              `Produk "${p.name.trim()}" sudah dipakai entri lain.`,
+            );
+          }
+          await getDB().products.put({ ...p, name: p.name.trim() });
         }),
       deleteProduct: (id) =>
         mutate(async () => {
@@ -159,23 +181,69 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }),
       addComponent: (c) =>
         mutate(async () => {
-          await getDB().components.add({ ...c, id: newId() });
+          const key = normalizeKey(c.componentName);
+          if (!key) throw new DuplicateError("Nama komponen tidak boleh kosong.");
+          const dup = (await getDB().components.toArray()).some(
+            (x) =>
+              x.productId === c.productId &&
+              normalizeKey(x.componentName) === key,
+          );
+          if (dup) {
+            throw new DuplicateError(
+              `Komponen "${c.componentName.trim()}" sudah ada pada produk ini.`,
+            );
+          }
+          await getDB().components.add({
+            ...c,
+            componentName: c.componentName.trim(),
+            id: newId(),
+          });
         }),
       deleteComponent: (id) =>
         mutate(async () => {
           await getDB().components.delete(id);
         }),
-      addCategory: (name) =>
-        mutate(async () => {
-          await getDB().categories.add({ id: newId(), name });
-        }),
+      addCategory: async (name) => {
+        const id = newId();
+        await mutate(async () => {
+          const key = normalizeKey(name);
+          if (!key) throw new DuplicateError("Nama kategori tidak boleh kosong.");
+          const existing = (await getDB().categories.toArray()).some(
+            (x) => normalizeKey(x.name) === key,
+          );
+          if (existing) {
+            throw new DuplicateError(`Kategori "${name.trim()}" sudah ada.`);
+          }
+          await getDB().categories.add({ id, name: name.trim() });
+        });
+        return id;
+      },
       deleteCategory: (id) =>
         mutate(async () => {
-          await getDB().categories.delete(id);
+          const db = getDB();
+          const products = await db.products.where("categoryId").equals(id).toArray();
+          await Promise.all(
+            products.map((p) => db.products.put({ ...p, categoryId: null })),
+          );
+          await db.categories.delete(id);
         }),
       addFixed: (f) =>
         mutate(async () => {
-          await getDB().fixedCosts.add({ ...f, id: newId() });
+          const key = normalizeKey(f.category);
+          if (!key) throw new DuplicateError("Kategori biaya tetap tidak boleh kosong.");
+          const dup = (await getDB().fixedCosts.toArray()).some(
+            (x) => normalizeKey(x.category) === key,
+          );
+          if (dup) {
+            throw new DuplicateError(
+              `Biaya tetap "${f.category.trim()}" sudah ada.`,
+            );
+          }
+          await getDB().fixedCosts.add({
+            ...f,
+            category: f.category.trim(),
+            id: newId(),
+          });
         }),
       deleteFixed: (id) =>
         mutate(async () => {
@@ -183,7 +251,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }),
       addOverhead: (o) =>
         mutate(async () => {
-          await getDB().overheadCosts.add({ ...o, id: newId() });
+          const key = normalizeKey(o.category);
+          if (!key) throw new DuplicateError("Kategori overhead tidak boleh kosong.");
+          const dup = (await getDB().overheadCosts.toArray()).some(
+            (x) => normalizeKey(x.category) === key,
+          );
+          if (dup) {
+            throw new DuplicateError(
+              `Overhead "${o.category.trim()}" sudah ada.`,
+            );
+          }
+          await getDB().overheadCosts.add({
+            ...o,
+            category: o.category.trim(),
+            id: newId(),
+          });
         }),
       deleteOverhead: (id) =>
         mutate(async () => {
@@ -191,11 +273,30 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }),
       addMaterial: (m) =>
         mutate(async () => {
-          await getDB().materials.add({ ...m, id: newId() });
+          const key = normalizeKey(m.name);
+          if (!key) throw new DuplicateError("Nama bahan baku tidak boleh kosong.");
+          const dup = (await getDB().materials.toArray()).some(
+            (x) => normalizeKey(x.name) === key,
+          );
+          if (dup) {
+            throw new DuplicateError(
+              `Bahan baku "${m.name.trim()}" sudah ada.`,
+            );
+          }
+          await getDB().materials.add({ ...m, name: m.name.trim(), id: newId() });
         }),
       updateMaterial: (m) =>
         mutate(async () => {
-          await getDB().materials.put(m);
+          const key = normalizeKey(m.name);
+          const clash = (await getDB().materials.toArray()).some(
+            (x) => x.id !== m.id && normalizeKey(x.name) === key,
+          );
+          if (clash) {
+            throw new DuplicateError(
+              `Bahan baku "${m.name.trim()}" sudah dipakai entri lain.`,
+            );
+          }
+          await getDB().materials.put({ ...m, name: m.name.trim() });
         }),
       deleteMaterial: (id) =>
         mutate(async () => {
@@ -203,7 +304,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }),
       addCashflow: (e) =>
         mutate(async () => {
-          await getDB().cashflow.add({ ...e, id: newId() });
+          const monthKey = normalizeKey(e.monthLabel);
+          const dup = (await getDB().cashflow.toArray()).some(
+            (x) =>
+              x.productId === e.productId &&
+              normalizeKey(x.monthLabel) === monthKey,
+          );
+          if (dup) {
+            throw new DuplicateError(
+              "Entri arus kas untuk produk & bulan ini sudah ada. Hapus atau ubah yang lama dulu.",
+            );
+          }
+          await getDB().cashflow.add({
+            ...e,
+            monthLabel: e.monthLabel.trim(),
+            id: newId(),
+          });
         }),
       deleteCashflow: (id) =>
         mutate(async () => {

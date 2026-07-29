@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
   Legend,
   Line,
@@ -17,8 +20,26 @@ import { percent, rupiah } from "@/lib/format";
 import { Button, Card, PageHeader, StatTile, Badge } from "@/components/ui";
 import { exportExcel } from "@/lib/io";
 
+const PRODUCT_COLORS = [
+  "#1f6b3a",
+  "#3d9a52",
+  "#b54708",
+  "#067647",
+  "#1e3a24",
+  "#8a5612",
+  "#2f6b3a",
+  "#0f5132",
+];
+
 export default function DashboardPage() {
   const { ready, data, summary, inventoryRows } = useStore();
+
+  const profitChart = useMemo(() => {
+    if (!summary?.profitByProductMonth) {
+      return { products: [] as string[], series: [] as Record<string, string | number>[] };
+    }
+    return summary.profitByProductMonth;
+  }, [summary]);
 
   if (!ready || !data || !summary) {
     return <p className="text-sm text-muted">Memuat data lokal…</p>;
@@ -84,6 +105,7 @@ export default function DashboardPage() {
                   <XAxis dataKey="month" tick={{ fill: "var(--muted)", fontSize: 12 }} />
                   <YAxis tick={{ fill: "var(--muted)", fontSize: 12 }} width={70} />
                   <Tooltip
+                    formatter={(value) => rupiah(Number(value ?? 0))}
                     contentStyle={{
                       background: "var(--bg-elevated)",
                       border: "1px solid var(--border)",
@@ -118,6 +140,51 @@ export default function DashboardPage() {
           </dl>
         </Card>
       </div>
+
+      <Card title="Profit per Produk per Bulan (Rp)" className="mt-4">
+        {profitChart.series.length === 0 || profitChart.products.length === 0 ? (
+          <p className="text-sm text-muted">
+            Belum ada data arus kas. Catat penjualan untuk melihat profit per produk.
+          </p>
+        ) : (
+          <div className="h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={profitChart.series}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="month" tick={{ fill: "var(--muted)", fontSize: 12 }} />
+                <YAxis
+                  tick={{ fill: "var(--muted)", fontSize: 12 }}
+                  width={80}
+                  tickFormatter={(v) =>
+                    new Intl.NumberFormat("id-ID", {
+                      notation: "compact",
+                      compactDisplay: "short",
+                    }).format(Number(v))
+                  }
+                />
+                <Tooltip
+                  formatter={(value, name) => [rupiah(Number(value ?? 0)), String(name)]}
+                  contentStyle={{
+                    background: "var(--bg-elevated)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 12,
+                  }}
+                />
+                <Legend />
+                {profitChart.products.map((name, i) => (
+                  <Bar
+                    key={name}
+                    dataKey={name}
+                    name={name}
+                    fill={PRODUCT_COLORS[i % PRODUCT_COLORS.length]}
+                    radius={[6, 6, 0, 0]}
+                  />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </Card>
 
       <Card
         title="Peringatan Stok — Segera Pesan"

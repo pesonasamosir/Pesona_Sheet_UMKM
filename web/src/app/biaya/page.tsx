@@ -13,6 +13,7 @@ import {
   Empty,
   Field,
   Input,
+  NumberInput,
   PageHeader,
 } from "@/components/ui";
 
@@ -32,14 +33,29 @@ export default function BiayaPage() {
   const [ohCat, setOhCat] = useState("");
   const [ohAmt, setOhAmt] = useState(0);
   const [ohPct, setOhPct] = useState(1);
+  const [hariKerja, setHariKerja] = useState<number | null>(null);
+  const [bulanTahun, setBulanTahun] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<{ type: "fc" | "oh"; id: string } | null>(
     null,
   );
 
   if (!ready || !data) return <p className="text-sm text-muted">Memuat…</p>;
 
+  const hariValue = hariKerja ?? data.settings.hariKerjaPerBulan;
+  const bulanValue = bulanTahun ?? data.settings.bulanPerTahun;
+
   const fcTotal = totalFixedCost(data.fixedCosts);
   const ohTotal = totalOverheadCost(data.overheadCosts);
+
+  async function withGuard(fn: () => Promise<void>) {
+    setError(null);
+    try {
+      await fn();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal menyimpan.");
+    }
+  }
 
   return (
     <div>
@@ -54,31 +70,34 @@ export default function BiayaPage() {
         }
       />
 
+      {error ? (
+        <p className="mb-4 rounded-xl border border-[color-mix(in_srgb,var(--danger)_35%,var(--border))] bg-danger-soft px-3 py-2 text-sm text-danger">
+          {error}
+        </p>
+      ) : null}
+
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="Biaya Tetap">
           <form
             className="mb-4 grid gap-3"
-            onSubmit={async (e) => {
+            onSubmit={(e) => {
               e.preventDefault();
-              if (!fcCat.trim()) return;
-              await addFixed({
-                category: fcCat.trim(),
-                amountPerMonth: fcAmt,
+              void withGuard(async () => {
+                if (!fcCat.trim()) return;
+                await addFixed({
+                  category: fcCat.trim(),
+                  amountPerMonth: fcAmt,
+                });
+                setFcCat("");
+                setFcAmt(0);
               });
-              setFcCat("");
-              setFcAmt(0);
             }}
           >
-            <Field label="Kategori">
+            <Field label="Kategori" hint="Tidak boleh duplikat">
               <Input value={fcCat} onChange={(e) => setFcCat(e.target.value)} required />
             </Field>
             <Field label="Nominal per Bulan (Rp)">
-              <Input
-                type="number"
-                min={0}
-                value={fcAmt}
-                onChange={(e) => setFcAmt(Number(e.target.value))}
-              />
+              <NumberInput value={fcAmt} onValueChange={setFcAmt} min={0} />
             </Field>
             <Button type="submit">
               <Plus className="size-4" /> Tambah Biaya Tetap
@@ -118,38 +137,34 @@ export default function BiayaPage() {
         <Card title="Biaya Tidak Langsung (Overhead)">
           <form
             className="mb-4 grid gap-3"
-            onSubmit={async (e) => {
+            onSubmit={(e) => {
               e.preventDefault();
-              if (!ohCat.trim()) return;
-              await addOverhead({
-                category: ohCat.trim(),
-                amountPerMonth: ohAmt,
-                allocationPct: ohPct,
+              void withGuard(async () => {
+                if (!ohCat.trim()) return;
+                await addOverhead({
+                  category: ohCat.trim(),
+                  amountPerMonth: ohAmt,
+                  allocationPct: ohPct,
+                });
+                setOhCat("");
+                setOhAmt(0);
+                setOhPct(1);
               });
-              setOhCat("");
-              setOhAmt(0);
-              setOhPct(1);
             }}
           >
-            <Field label="Kategori">
+            <Field label="Kategori" hint="Tidak boleh duplikat">
               <Input value={ohCat} onChange={(e) => setOhCat(e.target.value)} required />
             </Field>
             <Field label="Nominal per Bulan (Rp)">
-              <Input
-                type="number"
-                min={0}
-                value={ohAmt}
-                onChange={(e) => setOhAmt(Number(e.target.value))}
-              />
+              <NumberInput value={ohAmt} onValueChange={setOhAmt} min={0} />
             </Field>
             <Field label="% Alokasi ke Produksi (0–1)">
-              <Input
-                type="number"
-                step="0.01"
+              <NumberInput
+                value={ohPct}
+                onValueChange={setOhPct}
                 min={0}
                 max={1}
-                value={ohPct}
-                onChange={(e) => setOhPct(Number(e.target.value))}
+                allowDecimal
               />
             </Field>
             <p className="text-xs text-muted">
@@ -199,35 +214,34 @@ export default function BiayaPage() {
           className="grid max-w-lg gap-3"
           onSubmit={async (e) => {
             e.preventDefault();
-            const fd = new FormData(e.currentTarget);
             await updateSettings({
-              hariKerjaPerBulan: Number(fd.get("hari")),
-              bulanPerTahun: Number(fd.get("bulan")),
+              hariKerjaPerBulan: hariValue,
+              bulanPerTahun: bulanValue,
             });
+            setHariKerja(null);
+            setBulanTahun(null);
           }}
         >
           <Field
             label="Hari Kerja per Bulan"
             hint="Dipakai untuk konversi permintaan bulanan → harian"
           >
-            <Input
-              name="hari"
-              type="number"
-              defaultValue={data.settings.hariKerjaPerBulan}
+            <NumberInput
+              value={hariValue}
+              onValueChange={setHariKerja}
               min={1}
-              required
+              allowDecimal={false}
             />
           </Field>
           <Field
             label="Bulan dalam 1 Tahun"
             hint="Dipakai untuk permintaan tahunan & EOQ"
           >
-            <Input
-              name="bulan"
-              type="number"
-              defaultValue={data.settings.bulanPerTahun}
+            <NumberInput
+              value={bulanValue}
+              onValueChange={setBulanTahun}
               min={1}
-              required
+              allowDecimal={false}
             />
           </Field>
           <Button type="submit">Simpan Asumsi</Button>

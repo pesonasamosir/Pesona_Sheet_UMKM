@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { DuplicateError, useStore } from "@/lib/store";
 import { componentCostPerUnit } from "@/lib/calc";
 import { rupiah, num } from "@/lib/format";
 import {
@@ -13,6 +13,7 @@ import {
   Empty,
   Field,
   Input,
+  NumberInput,
   PageHeader,
   PreviewBox,
   Select,
@@ -24,22 +25,27 @@ export default function ProdukPage() {
     data,
     hppOf,
     addProduct,
+    updateProduct,
     deleteProduct,
     addComponent,
     deleteComponent,
     addCategory,
+    deleteCategory,
   } = useStore();
 
   const [name, setName] = useState("");
   const [price, setPrice] = useState(0);
   const [categoryId, setCategoryId] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [selected, setSelected] = useState<string>("");
   const [compName, setCompName] = useState("");
   const [unit, setUnit] = useState("pcs");
   const [qty, setQty] = useState(1);
   const [compPrice, setCompPrice] = useState(0);
   const [newCat, setNewCat] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const [pendingCatDelete, setPendingCatDelete] = useState<string | null>(null);
 
   const liveHpp = useMemo(() => componentCostPerUnit(qty, compPrice), [qty, compPrice]);
 
@@ -48,6 +54,46 @@ export default function ProdukPage() {
   const activeId = selected || data.products[0]?.id || "";
   const active = data.products.find((p) => p.id === activeId);
   const comps = data.components.filter((c) => c.productId === activeId);
+  const pendingCat = data.categories.find((c) => c.id === pendingCatDelete);
+  const productsUsingCat = pendingCatDelete
+    ? data.products.filter((p) => p.categoryId === pendingCatDelete).length
+    : 0;
+  const editingProduct = editingId
+    ? data.products.find((p) => p.id === editingId)
+    : null;
+
+  function resetForm() {
+    setEditingId(null);
+    setName("");
+    setPrice(0);
+    setCategoryId("");
+  }
+
+  function startEdit(id: string) {
+    const p = data!.products.find((x) => x.id === id);
+    if (!p) return;
+    setEditingId(p.id);
+    setName(p.name);
+    setPrice(p.sellingPrice);
+    setCategoryId(p.categoryId ?? "");
+    setSelected(p.id);
+    setError(null);
+  }
+
+  async function withGuard(fn: () => Promise<void>) {
+    setError(null);
+    try {
+      await fn();
+    } catch (err) {
+      setError(
+        err instanceof DuplicateError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "Gagal menyimpan.",
+      );
+    }
+  }
 
   return (
     <div>
@@ -56,33 +102,54 @@ export default function ProdukPage() {
         lead="Hitung HPP per unit dari komponen biaya variabel (qty × harga), lalu agregasi per produk."
       />
 
+      {error ? (
+        <p className="mb-4 rounded-xl border border-[color-mix(in_srgb,var(--danger)_35%,var(--border))] bg-danger-soft px-3 py-2 text-sm text-danger">
+          {error}
+        </p>
+      ) : null}
+
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Tambah Produk">
+        <Card
+          title={editingProduct ? `Edit Produk — ${editingProduct.name}` : "Tambah Produk"}
+          action={
+            editingId ? (
+              <Button type="button" variant="ghost" size="sm" onClick={resetForm}>
+                <X className="size-3.5" /> Batal
+              </Button>
+            ) : null
+          }
+        >
           <form
             className="grid gap-3"
-            onSubmit={async (e) => {
+            onSubmit={(e) => {
               e.preventDefault();
-              if (!name.trim()) return;
-              const id = await addProduct({
-                name: name.trim(),
-                sellingPrice: price,
-                categoryId: categoryId || null,
+              void withGuard(async () => {
+                if (!name.trim()) return;
+                if (editingId && editingProduct) {
+                  await updateProduct({
+                    ...editingProduct,
+                    name: name.trim(),
+                    sellingPrice: price,
+                    categoryId: categoryId || null,
+                  });
+                  resetForm();
+                } else {
+                  const id = await addProduct({
+                    name: name.trim(),
+                    sellingPrice: price,
+                    categoryId: categoryId || null,
+                  });
+                  setSelected(id);
+                  resetForm();
+                }
               });
-              setSelected(id);
-              setName("");
-              setPrice(0);
             }}
           >
-            <Field label="Nama Produk">
+            <Field label="Nama Produk" hint="Tidak boleh sama dengan produk yang sudah ada">
               <Input value={name} onChange={(e) => setName(e.target.value)} required />
             </Field>
             <Field label="Harga Jual (Rp)">
-              <Input
-                type="number"
-                min={0}
-                value={price}
-                onChange={(e) => setPrice(Number(e.target.value))}
-              />
+              <NumberInput value={price} onValueChange={setPrice} min={0} />
             </Field>
             <Field label="Kategori">
               <Select
@@ -106,17 +173,28 @@ export default function ProdukPage() {
               <Button
                 type="button"
                 variant="secondary"
-                onClick={async () => {
-                  if (!newCat.trim()) return;
-                  await addCategory(newCat.trim());
-                  setNewCat("");
-                }}
+                onClick={() =>
+                  void withGuard(async () => {
+                    if (!newCat.trim()) return;
+                    const id = await addCategory(newCat.trim());
+                    setCategoryId(id);
+                    setNewCat("");
+                  })
+                }
               >
                 + Kategori
               </Button>
             </div>
             <Button type="submit">
-              <Plus className="size-4" /> Tambah Produk
+              {editingId ? (
+                <>
+                  <Pencil className="size-4" /> Simpan Perubahan
+                </>
+              ) : (
+                <>
+                  <Plus className="size-4" /> Tambah Produk
+                </>
+              )}
             </Button>
           </form>
         </Card>
@@ -126,37 +204,89 @@ export default function ProdukPage() {
             <Empty>Belum ada produk.</Empty>
           ) : (
             <ul className="space-y-2">
-              {data.products.map((p) => (
-                <li
-                  key={p.id}
-                  className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2 ${
-                    p.id === activeId ? "border-primary bg-primary-soft" : "border-border"
-                  }`}
-                  onClick={() => setSelected(p.id)}
-                >
-                  <div>
-                    <p className="font-semibold">{p.name}</p>
-                    <p className="text-xs text-muted">
-                      Jual {rupiah(p.sellingPrice)} · HPP {rupiah(hppOf(p.id))}
-                    </p>
-                  </div>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPendingDelete(p.id);
-                    }}
+              {data.products.map((p) => {
+                const cat = data.categories.find((c) => c.id === p.categoryId);
+                return (
+                  <li
+                    key={p.id}
+                    className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2 ${
+                      p.id === activeId ? "border-primary bg-primary-soft" : "border-border"
+                    }`}
+                    onClick={() => setSelected(p.id)}
                   >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                </li>
-              ))}
+                    <div>
+                      <p className="font-semibold">{p.name}</p>
+                      <p className="text-xs text-muted">
+                        {cat ? `${cat.name} · ` : ""}
+                        Jual {rupiah(p.sellingPrice)} · HPP {rupiah(hppOf(p.id))}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startEdit(p.id);
+                        }}
+                      >
+                        <Pencil className="size-3.5" /> Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPendingDelete(p.id);
+                        }}
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Card>
       </div>
+
+      <Card title="Kelola Kategori" className="mt-4">
+        {data.categories.length === 0 ? (
+          <Empty>Belum ada kategori.</Empty>
+        ) : (
+          <ul className="space-y-2">
+            {data.categories.map((c) => {
+              const used = data.products.filter((p) => p.categoryId === c.id).length;
+              return (
+                <li
+                  key={c.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-2 text-sm"
+                >
+                  <span>
+                    <span className="font-medium">{c.name}</span>
+                    <span className="mt-0.5 block text-xs text-muted">
+                      {used === 0
+                        ? "Belum dipakai produk"
+                        : `Dipakai ${used} produk`}
+                    </span>
+                  </span>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    type="button"
+                    onClick={() => setPendingCatDelete(c.id)}
+                  >
+                    <Trash2 className="size-3.5" /> Hapus
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Card>
 
       {active ? (
         <Card
@@ -166,43 +296,37 @@ export default function ProdukPage() {
         >
           <form
             className="mb-4 grid gap-3 md:grid-cols-2"
-            onSubmit={async (e) => {
+            onSubmit={(e) => {
               e.preventDefault();
-              if (!compName.trim()) return;
-              await addComponent({
-                productId: active.id,
-                componentName: compName.trim(),
-                unit,
-                qtyPerUnit: qty,
-                pricePerUnit: compPrice,
+              void withGuard(async () => {
+                if (!compName.trim()) return;
+                await addComponent({
+                  productId: active.id,
+                  componentName: compName.trim(),
+                  unit,
+                  qtyPerUnit: qty,
+                  pricePerUnit: compPrice,
+                });
+                setCompName("");
+                setQty(1);
+                setCompPrice(0);
               });
-              setCompName("");
-              setQty(1);
-              setCompPrice(0);
             }}
           >
-            <Field label="Nama Bahan/Komponen">
+            <Field
+              label="Nama Bahan/Komponen"
+              hint="Tidak boleh duplikat pada produk yang sama"
+            >
               <Input value={compName} onChange={(e) => setCompName(e.target.value)} required />
             </Field>
             <Field label="Satuan">
               <Input value={unit} onChange={(e) => setUnit(e.target.value)} />
             </Field>
             <Field label="Kuantitas per Unit">
-              <Input
-                type="number"
-                step="any"
-                min={0}
-                value={qty}
-                onChange={(e) => setQty(Number(e.target.value))}
-              />
+              <NumberInput value={qty} onValueChange={setQty} min={0} />
             </Field>
             <Field label="Harga per Satuan (Rp)">
-              <Input
-                type="number"
-                min={0}
-                value={compPrice}
-                onChange={(e) => setCompPrice(Number(e.target.value))}
-              />
+              <NumberInput value={compPrice} onValueChange={setCompPrice} min={0} />
             </Field>
             <div className="md:col-span-2">
               <PreviewBox>
@@ -266,8 +390,31 @@ export default function ProdukPage() {
         message="Produk, komponen HPP, dan entri arus kas terkait akan dihapus dari perangkat ini."
         onCancel={() => setPendingDelete(null)}
         onConfirm={async () => {
-          if (pendingDelete) await deleteProduct(pendingDelete);
+          if (pendingDelete) {
+            if (editingId === pendingDelete) resetForm();
+            await deleteProduct(pendingDelete);
+          }
           setPendingDelete(null);
+        }}
+      />
+
+      <ConfirmDialog
+        open={!!pendingCatDelete}
+        title="Hapus kategori?"
+        message={
+          pendingCat
+            ? productsUsingCat > 0
+              ? `Kategori "${pendingCat.name}" dipakai ${productsUsingCat} produk. Produk tersebut akan menjadi tanpa kategori.`
+              : `Kategori "${pendingCat.name}" akan dihapus.`
+            : "Kategori akan dihapus."
+        }
+        onCancel={() => setPendingCatDelete(null)}
+        onConfirm={async () => {
+          if (pendingCatDelete) {
+            if (categoryId === pendingCatDelete) setCategoryId("");
+            await deleteCategory(pendingCatDelete);
+          }
+          setPendingCatDelete(null);
         }}
       />
     </div>

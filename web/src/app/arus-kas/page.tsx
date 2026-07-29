@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { DuplicateError, useStore } from "@/lib/store";
 import {
   calculateCashflowEntry,
   productHpp,
@@ -18,6 +18,7 @@ import {
   Empty,
   Field,
   Input,
+  NumberInput,
   PageHeader,
   PreviewBox,
   Select,
@@ -29,10 +30,11 @@ export default function ArusKasPage() {
 
   const [monthLabel, setMonthLabel] = useState("Bulan 1");
   const [productId, setProductId] = useState("");
-  const [unitsSold, setUnitsSold] = useState(100);
-  const [sellingPrice, setSellingPrice] = useState(25000);
-  const [fixedPct, setFixedPct] = useState(0.5);
-  const [ohPct, setOhPct] = useState(0.5);
+  const [unitsSold, setUnitsSold] = useState(0);
+  const [sellingPrice, setSellingPrice] = useState(0);
+  const [fixedPct, setFixedPct] = useState(0);
+  const [ohPct, setOhPct] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
   const preview = useMemo(() => {
@@ -70,21 +72,36 @@ export default function ArusKasPage() {
         }
       />
 
+      {error ? (
+        <p className="mb-4 rounded-xl border border-[color-mix(in_srgb,var(--danger)_35%,var(--border))] bg-danger-soft px-3 py-2 text-sm text-danger">
+          {error}
+        </p>
+      ) : null}
+
       <Card title="+ Catat Penjualan" className="mb-4">
         <form
           className="grid gap-3 md:grid-cols-2"
           onSubmit={async (e) => {
             e.preventDefault();
-            const pid = productId || data.products[0]?.id;
-            if (!pid) return;
-            await addCashflow({
-              monthLabel: monthLabel.trim() || "Bulan",
-              productId: pid,
-              unitsSold,
-              sellingPrice,
-              fixedCostAllocationPct: fixedPct,
-              overheadAllocationPct: ohPct,
-            });
+            setError(null);
+            try {
+              const pid = productId || data.products[0]?.id;
+              if (!pid) return;
+              await addCashflow({
+                monthLabel: monthLabel.trim() || "Bulan",
+                productId: pid,
+                unitsSold,
+                sellingPrice,
+                fixedCostAllocationPct: fixedPct,
+                overheadAllocationPct: ohPct,
+              });
+            } catch (err) {
+              setError(
+                err instanceof DuplicateError || err instanceof Error
+                  ? err.message
+                  : "Gagal mencatat penjualan.",
+              );
+            }
           }}
         >
           <Field label="Label Bulan">
@@ -107,42 +124,38 @@ export default function ArusKasPage() {
             </Select>
           </Field>
           <Field label="Unit Terjual">
-            <Input
-              type="number"
-              min={0}
+            <NumberInput
               value={unitsSold}
-              onChange={(e) => setUnitsSold(Number(e.target.value))}
+              onValueChange={setUnitsSold}
+              min={0}
             />
           </Field>
           <Field label="Harga Jual / Unit">
-            <Input
-              type="number"
-              min={0}
+            <NumberInput
               value={sellingPrice}
-              onChange={(e) => setSellingPrice(Number(e.target.value))}
+              onValueChange={setSellingPrice}
+              min={0}
             />
           </Field>
           <Field
             label="% Alokasi Fixed Cost (0–1)"
             hint="Manual sesuai estimasi pemilik UMKM"
           >
-            <Input
-              type="number"
-              step="0.01"
+            <NumberInput
+              value={fixedPct}
+              onValueChange={setFixedPct}
               min={0}
               max={1}
-              value={fixedPct}
-              onChange={(e) => setFixedPct(Number(e.target.value))}
+              step={0.01}
             />
           </Field>
           <Field label="% Alokasi Overhead (0–1)">
-            <Input
-              type="number"
-              step="0.01"
+            <NumberInput
+              value={ohPct}
+              onValueChange={setOhPct}
               min={0}
               max={1}
-              value={ohPct}
-              onChange={(e) => setOhPct(Number(e.target.value))}
+              step={0.01}
             />
           </Field>
 

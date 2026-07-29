@@ -1,7 +1,7 @@
 "use client";
 
 import { clsx } from "@/lib/format";
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+import { useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
 
 export function Button({
   variant = "primary",
@@ -44,6 +44,67 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
         "w-full min-h-11 rounded-xl border border-border bg-elevated px-3 text-base text-fg outline-none transition placeholder:text-muted focus:border-primary focus:ring-2 focus:ring-[var(--ring)]",
         props.className,
       )}
+    />
+  );
+}
+
+/**
+ * Number field that shows empty + placeholder "0" when value is 0,
+ * so users type 123 instead of editing over 0123.
+ */
+export function NumberInput({
+  value,
+  onValueChange,
+  placeholder = "0",
+  allowDecimal = true,
+  min,
+  max,
+  className,
+  onFocus,
+  onBlur,
+  ...rest
+}: Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type"> & {
+  value: number;
+  onValueChange: (n: number) => void;
+  allowDecimal?: boolean;
+}) {
+  const [focused, setFocused] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  const display = focused ? draft : value === 0 ? "" : String(value);
+
+  return (
+    <Input
+      {...rest}
+      type="text"
+      inputMode={allowDecimal ? "decimal" : "numeric"}
+      placeholder={placeholder}
+      value={display}
+      className={className}
+      onFocus={(e) => {
+        setFocused(true);
+        setDraft(value === 0 ? "" : String(value));
+        onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        setFocused(false);
+        onBlur?.(e);
+      }}
+      onChange={(e) => {
+        const raw = e.target.value.trim();
+        const pattern = allowDecimal ? /^-?\d*\.?\d*$/ : /^-?\d*$/;
+        if (raw !== "" && !pattern.test(raw)) return;
+        setDraft(raw);
+        if (raw === "" || raw === "-" || raw === ".") {
+          onValueChange(0);
+          return;
+        }
+        const n = Number(raw);
+        if (!Number.isFinite(n)) return;
+        if (min !== undefined && n < Number(min)) return;
+        if (max !== undefined && n > Number(max)) return;
+        onValueChange(n);
+      }}
     />
   );
 }

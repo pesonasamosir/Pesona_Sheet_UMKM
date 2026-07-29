@@ -12,7 +12,7 @@ import {
   Card,
   Empty,
   Field,
-  Input,
+  NumberInput,
   PageHeader,
   Select,
 } from "@/components/ui";
@@ -110,15 +110,15 @@ export default function InventoriMingguanPage() {
                     ] as const
                   ).map(([key, label]) => (
                     <Field key={key} label={label}>
-                      <Input
-                        type="number"
+                      <NumberInput
                         value={plan[key]}
-                        onChange={(e) =>
+                        onValueChange={(n) =>
                           void upsertWeeklyPlan({
                             ...plan,
-                            [key]: Number(e.target.value),
+                            [key]: n,
                           })
                         }
+                        min={0}
                       />
                     </Field>
                   ))}
@@ -152,15 +152,16 @@ export default function InventoriMingguanPage() {
                         <td className="py-1 pr-2 font-medium">Demand</td>
                         {plan.weeklyDemand.map((d, i) => (
                           <td key={i} className="py-1 pr-2 text-right">
-                            <Input
+                            <NumberInput
                               className="min-h-8 px-1 text-right text-xs"
-                              type="number"
                               value={d}
-                              onChange={(e) => {
+                              onValueChange={(n) => {
                                 const weeklyDemand = [...plan.weeklyDemand];
-                                weeklyDemand[i] = Number(e.target.value);
+                                weeklyDemand[i] = n;
                                 void upsertWeeklyPlan({ ...plan, weeklyDemand });
                               }}
+                              min={0}
+                              allowDecimal={false}
                             />
                           </td>
                         ))}

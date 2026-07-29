@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Plus, Trash2 } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { DuplicateError, useStore } from "@/lib/store";
 import { previewInventory } from "@/lib/calc";
 import { num } from "@/lib/format";
 import {
@@ -14,6 +14,7 @@ import {
   Empty,
   Field,
   Input,
+  NumberInput,
   PageHeader,
   PreviewBox,
 } from "@/components/ui";
@@ -21,20 +22,21 @@ import {
 const emptyForm = {
   name: "",
   unit: "kg",
-  avgDemandMonth: 60,
-  maxDemandMonth: 100,
-  avgLeadTimeDays: 5,
-  maxLeadTimeDays: 10,
-  orderCost: 50000,
-  holdingCostPerUnitMonth: 500,
-  purchasePrice: 15000,
-  currentStock: 40,
+  avgDemandMonth: 0,
+  maxDemandMonth: 0,
+  avgLeadTimeDays: 0,
+  maxLeadTimeDays: 0,
+  orderCost: 0,
+  holdingCostPerUnitMonth: 0,
+  purchasePrice: 0,
+  currentStock: 0,
 };
 
 export default function InventoriPage() {
   const { ready, data, inventoryRows, addMaterial, deleteMaterial, updateMaterial } =
     useStore();
   const [form, setForm] = useState(emptyForm);
+  const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
   const preview = useMemo(() => {
@@ -56,43 +58,67 @@ export default function InventoriPage() {
         }
       />
 
+      {error ? (
+        <p className="mb-4 rounded-xl border border-[color-mix(in_srgb,var(--danger)_35%,var(--border))] bg-danger-soft px-3 py-2 text-sm text-danger">
+          {error}
+        </p>
+      ) : null}
+
       <Card title="+ Tambah / Update Stok Bahan Baku" className="mb-4">
         <form
           className="grid gap-3 md:grid-cols-2"
           onSubmit={async (e) => {
             e.preventDefault();
-            if (!form.name.trim()) return;
-            await addMaterial({ ...form, name: form.name.trim() });
-            setForm(emptyForm);
+            setError(null);
+            try {
+              if (!form.name.trim()) return;
+              await addMaterial({ ...form, name: form.name.trim() });
+              setForm(emptyForm);
+            } catch (err) {
+              setError(
+                err instanceof DuplicateError || err instanceof Error
+                  ? err.message
+                  : "Gagal menambah bahan.",
+              );
+            }
           }}
         >
           {(
             [
               ["name", "Nama Bahan", "text"],
               ["unit", "Satuan", "text"],
-              ["avgDemandMonth", "Permintaan Rata-rata/Bulan", "number"],
-              ["maxDemandMonth", "Permintaan Maksimum/Bulan", "number"],
-              ["avgLeadTimeDays", "Lead Time Rata-rata (hari)", "number"],
-              ["maxLeadTimeDays", "Lead Time Maksimum (hari)", "number"],
-              ["orderCost", "Biaya Pemesanan / Order (Rp)", "number"],
-              ["holdingCostPerUnitMonth", "Biaya Simpan / Unit / Bulan", "number"],
-              ["purchasePrice", "Harga Beli / Unit", "number"],
-              ["currentStock", "Stok Saat Ini", "number"],
             ] as const
-          ).map(([key, label, type]) => (
+          ).map(([key, label]) => (
             <Field key={key} label={label}>
               <Input
-                type={type}
-                step={type === "number" ? "any" : undefined}
-                value={form[key] as string | number}
+                value={form[key]}
                 onChange={(e) =>
                   setForm((f) => ({
                     ...f,
-                    [key]:
-                      type === "number" ? Number(e.target.value) : e.target.value,
+                    [key]: e.target.value,
                   }))
                 }
                 required={key === "name"}
+              />
+            </Field>
+          ))}
+          {(
+            [
+              ["avgDemandMonth", "Permintaan Rata-rata/Bulan"],
+              ["maxDemandMonth", "Permintaan Maksimum/Bulan"],
+              ["avgLeadTimeDays", "Lead Time Rata-rata (hari)"],
+              ["maxLeadTimeDays", "Lead Time Maksimum (hari)"],
+              ["orderCost", "Biaya Pemesanan / Order (Rp)"],
+              ["holdingCostPerUnitMonth", "Biaya Simpan / Unit / Bulan"],
+              ["purchasePrice", "Harga Beli / Unit"],
+              ["currentStock", "Stok Saat Ini"],
+            ] as const
+          ).map(([key, label]) => (
+            <Field key={key} label={label}>
+              <NumberInput
+                value={form[key]}
+                onValueChange={(n) => setForm((f) => ({ ...f, [key]: n }))}
+                min={0}
               />
             </Field>
           ))}
