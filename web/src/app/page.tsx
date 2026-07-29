@@ -20,25 +20,15 @@ import { percent, rupiah } from "@/lib/format";
 import { Button, Card, PageHeader, StatTile, Badge } from "@/components/ui";
 import { exportExcel } from "@/lib/io";
 
-const PRODUCT_COLORS = [
-  "#1f6b3a",
-  "#3d9a52",
-  "#b54708",
-  "#067647",
-  "#1e3a24",
-  "#8a5612",
-  "#2f6b3a",
-  "#0f5132",
-];
-
 export default function DashboardPage() {
   const { ready, data, summary, inventoryRows } = useStore();
 
-  const profitChart = useMemo(() => {
-    if (!summary?.profitByProductMonth) {
-      return { products: [] as string[], series: [] as Record<string, string | number>[] };
-    }
-    return summary.profitByProductMonth;
+  const profitByMonth = useMemo(() => {
+    if (!summary?.monthlySeries?.length) return [];
+    return summary.monthlySeries.map((m) => ({
+      month: m.month,
+      profit: m.profit,
+    }));
   }, [summary]);
 
   if (!ready || !data || !summary) {
@@ -141,15 +131,15 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <Card title="Profit per Produk per Bulan (Rp)" className="mt-4">
-        {profitChart.series.length === 0 || profitChart.products.length === 0 ? (
+      <Card title="Profit per Bulan (Rp)" className="mt-4">
+        {profitByMonth.length === 0 ? (
           <p className="text-sm text-muted">
-            Belum ada data arus kas. Catat penjualan untuk melihat profit per produk.
+            Belum ada data arus kas. Catat penjualan untuk melihat profit per bulan.
           </p>
         ) : (
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={profitChart.series}>
+              <BarChart data={profitByMonth}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="month" tick={{ fill: "var(--muted)", fontSize: 12 }} />
                 <YAxis
@@ -163,23 +153,19 @@ export default function DashboardPage() {
                   }
                 />
                 <Tooltip
-                  formatter={(value, name) => [rupiah(Number(value ?? 0)), String(name)]}
+                  formatter={(value) => [rupiah(Number(value ?? 0)), "Profit"]}
                   contentStyle={{
                     background: "var(--bg-elevated)",
                     border: "1px solid var(--border)",
                     borderRadius: 12,
                   }}
                 />
-                <Legend />
-                {profitChart.products.map((name, i) => (
-                  <Bar
-                    key={name}
-                    dataKey={name}
-                    name={name}
-                    fill={PRODUCT_COLORS[i % PRODUCT_COLORS.length]}
-                    radius={[6, 6, 0, 0]}
-                  />
-                ))}
+                <Bar
+                  dataKey="profit"
+                  name="Profit"
+                  fill="#1f6b3a"
+                  radius={[6, 6, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -334,7 +334,6 @@ export function dashboardSummary(args: {
     jumlahProduk: args.products.length,
     jumlahBahanBaku: args.materials.length,
     monthlySeries: buildMonthlySeries(rows),
-    profitByProductMonth: buildProfitByProductMonth(rows),
   };
 }
 
@@ -364,25 +363,3 @@ function buildMonthlySeries(rows: CashFlowResult[]) {
   }));
 }
 
-/** Rows for grouped bar chart: one object per month, keys = product names (profit Rp). */
-export function buildProfitByProductMonth(rows: CashFlowResult[]) {
-  const months: string[] = [];
-  const products: string[] = [];
-  for (const r of rows) {
-    if (!months.includes(r.monthLabel)) months.push(r.monthLabel);
-    if (!products.includes(r.productName)) products.push(r.productName);
-  }
-  return {
-    products,
-    series: months.map((month) => {
-      const row: Record<string, string | number> = { month };
-      for (const name of products) {
-        const hit = rows.find(
-          (r) => r.monthLabel === month && r.productName === name,
-        );
-        row[name] = hit ? round2(hit.profit) : 0;
-      }
-      return row;
-    }),
-  };
-}
